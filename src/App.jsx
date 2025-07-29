@@ -18,6 +18,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import JobPreferences from './pages/Preferences/JobPreferences';
 import AllJobs from './pages/Jobs/AllJobs';
 import MyJobApplications from './pages/JobApplications/MyJobApplications';
+import EditJob from './pages/Jobs/EditJob';
 
 const App = () => {
   createAxiosResponseInterceptor();
@@ -42,6 +43,7 @@ const App = () => {
               <Route path="JobSeekers" element={<JobSeekers />} />
               <Route path="AllJobs" element={<AllJobs />} />
               <Route path="postjob" element={<PostJob />} />
+              <Route path="EditJob/:jobId" element={<EditJob />} />
               <Route path="jobapplications" element={<JobApplications />} />
             </Route>
 

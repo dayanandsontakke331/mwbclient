@@ -11,6 +11,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
+import { toast } from 'react-toastify';
 
 const UploadResume = () => {
     const fileInputRef = useRef(null);
@@ -46,25 +47,24 @@ const UploadResume = () => {
         if (!isFileSelected) return;
 
         const formData = new FormData();
-        formData.append('id', user._id)
+        formData.append('id', user._id);
         formData.append('file', isFileSelected);
 
         try {
             setUploading(true);
 
-            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/uploadResume`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/uploadResume`, formData);
 
-            console.log('Upload Success', response.data);
-            alert('Resume uploaded successfully!');
-            setIsFileSelected(null);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        } catch (error) {
-            console.log('Upload Error', error);
-            alert('Failed to upload resume.');
+            if (res.data?.success) {
+                alert(res.data.message || "Resume uploaded!");
+                setIsFileSelected(null);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            } else {
+                alert(res.data?.message || "Upload failed.");
+            }
+
+        } catch (err) {
+            alert(err?.response?.data?.message || err.message || "Upload error");
         } finally {
             setUploading(false);
         }

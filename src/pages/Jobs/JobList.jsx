@@ -1,4 +1,3 @@
-import { useState, useMemo } from "react";
 import {
   Box,
   Paper,
@@ -12,17 +11,7 @@ import {
   Stack,
 } from "@mui/material";
 
-function JobsList({ jobs, onSelect, page, setPage, count }) {
-  const [search, setSearch] = useState("");
-
-  const filteredJobs = useMemo(() => {
-    return jobs.filter((job) =>
-      `${job.title} ${job.companyName} ${job.description}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    );
-  }, [search, jobs]);
-
+function JobsList({ jobs, onSelect, page, setPage, count, search, setSearch }) {
   return (
     <>
       <TextField
@@ -40,7 +29,7 @@ function JobsList({ jobs, onSelect, page, setPage, count }) {
       <Box sx={{ flex: 1, overflow: "auto" }}>
         <Paper variant="outlined">
           <List disablePadding>
-            {filteredJobs.map((job) => (
+            {jobs.map((job) => (
               <ListItem
                 key={job._id}
                 button

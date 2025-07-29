@@ -80,7 +80,7 @@ const JobPreferences = ({ userId }) => {
         console.log("errs", errs)
         if (Object.keys(errs).length > 0) {
             setFieldErr(errs);
-            toast.error("Enter all steps values");
+            alert("Enter all steps values");
             return;
         }
         setLoading(true);
@@ -106,15 +106,15 @@ const JobPreferences = ({ userId }) => {
             console.log("res.data.data", res.data.data, res.data.success)
             if (res.data.success) {
                 setForm(res.data.data)
-                toast.success(res.data.message || 'Preferences saved successfully');
+                alert(res.data.message || 'Preferences saved successfully');
                 setActiveStep(0);
                 // setForm(defaultForm);
             } else {
-                toast.error(res.data.message || 'Something went wrong');
+                alert(res.data.message || 'Something went wrong');
             }
         } catch (err) {
             console.error(err);
-            toast.error('Error occurred while saving preferences');
+            alert('Error occurred while saving preferences');
         }
 
         setLoading(false);

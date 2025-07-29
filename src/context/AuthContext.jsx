@@ -71,7 +71,7 @@ const AuthProvider = ({ children }) => {
       return errorCallback(response.error)
     }
 
-    // toast.success(response?.data?.message);
+    // alert(response?.data?.message);
     
     const { accessToken, refreshToken, user: userData } = response.data.data
 

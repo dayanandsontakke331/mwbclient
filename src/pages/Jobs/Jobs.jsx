@@ -18,6 +18,7 @@ function Jobs() {
   const fetchJobs = async (term = "", pg = 1) => {
     try {
       setLoading(true);
+      console.log("Fetching with:", term, pg);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/jobs/list`, {
         params: {
           search: term,
@@ -42,6 +43,12 @@ function Jobs() {
   useEffect(() => {
     debouncedFetchJobs(searchTerm, page);
   }, [searchTerm, page]);
+
+  useEffect(() => {
+    return () => {
+      debouncedFetchJobs.cancel();
+    };
+  }, [debouncedFetchJobs]);
 
   const count = Math.ceil(totalCount / PER_PAGE);
 

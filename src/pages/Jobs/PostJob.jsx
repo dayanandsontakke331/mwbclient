@@ -80,6 +80,7 @@ const PostJob = ({ initialData = null }) => {
         setFieldErr({});
         const errs = validatePostJob(form);
         if (Object.keys(errs).length > 0) {
+            alert("Please enter all the required job details");
             setFieldErr(errs);
             return
         }
@@ -94,13 +95,15 @@ const PostJob = ({ initialData = null }) => {
         const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/jobs/post`, payload);
         console.log("response", response)
         if (response?.data?.success) {
-            toast.success(response.data.message);
+            alert(response.data.message);
             setLoading(false);
-            setForm(defaultForm);
+            if (!initialData) {
+                setForm(defaultForm);
+            }
             setActiveStep(0)
             return;
         }
-        toast.success("Error occured while posting job");
+        alert("Error occured while posting job");
         setLoading(false);
         return;
     };

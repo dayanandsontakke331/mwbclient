@@ -60,24 +60,37 @@ const Login = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     const errs = temValidateLogin(values);
+    console.log("errs", errs)
     if (Object.keys(errs).length > 0) {
-      setFieldErr(errs)
+      setFieldErr(errs);
+      return;
     }
-    setLoading(true);
 
+    setLoading(true);
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, {
         username: values.username,
         password: values.password,
         loginAs: values.loginAs ? "recruiter" : "jobseeker"
-      })
+      });
 
-      console.log("response", response);
+      if(response?.data?.success === false) { 
+        alert(response?.data?.message)       
+        return
+      }
+
+      // if(response.status == 200) {
+      //   alert(response?.data?.message || 'Login failed');
+      //   return 
+      // }
+
       if (response?.data?.success) {
-        alert(response?.data?.message);
+        alert("Login Success")
+        // alert("message");
         const { accessToken, user } = response.data.data;
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('userData', JSON.stringify(user));
+
         auth.login(
           {
             username: user.phone,
@@ -86,24 +99,25 @@ const Login = () => {
             login: "admin",
           },
           (message) => {
-            alert(message);
+            // alert(message);
             return;
           },
           response
         );
+
+        // alert(response?.data?.message);
         navigate('/');
       } else {
-        toast.success(response?.data?.message);
-
+        alert(response?.data?.message || 'Login failed');
       }
-
-      // toast.success(response?.data?.message);
     } catch (error) {
-      console.log('Login failed', error);
+      console.error('Login failed:', error);
+      alert(error?.response?.data?.message || 'Something went wrong!');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <Box

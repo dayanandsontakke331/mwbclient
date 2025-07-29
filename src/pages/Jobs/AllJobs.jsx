@@ -6,11 +6,13 @@ import {
     TextField,
     MenuItem,
     CircularProgress,
-    Chip
+    Chip,
+    Button
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import moment from 'moment';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AllJobs = ({ role, userId }) => {
     const [rows, setRows] = useState([]);
@@ -20,6 +22,7 @@ const AllJobs = ({ role, userId }) => {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(false);
     const [skillsFilter, setSkillsFilter] = useState('');
+    const navigate = useNavigate();
 
     const fetchJobs = async () => {
         setLoading(true);
@@ -157,7 +160,25 @@ const AllJobs = ({ role, userId }) => {
                     onClick={() => updateJobStatus(row._id, row.status === 'Open' ? 'Closed' : 'Open')}
                 />
             )
+        },
+        {
+            field: '_id',
+            headerName: 'Actions',
+            flex: 0.2,
+            minWidth: 150,
+            sortable: false,
+            filterable: false,
+            renderCell: ({ row }) => (
+                <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => navigate(`/EditJob/${row._id}`)}
+                >
+                    Edit
+                </Button>
+            )
         }
+
     ], []);
 
     return (

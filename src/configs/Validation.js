@@ -59,28 +59,32 @@ export const tempValidatePreferences = (form) => {
 export const temValidateLogin = (form = {}) => {
     const errors = {};
 
-    if (!form.username || form.username.trim() === '') {
+    const username = form.username?.trim();
+    const password = form.password?.trim();
+
+    if (!username) {
         errors.username = 'Username is required';
     } else {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^[6-9]\d{9}$/;
+        const phoneRegex = /^\d{10}$/;
 
-        const isEmail = emailRegex.test(form.username);
-        const isPhone = phoneRegex.test(form.username);
+        const isEmail = emailRegex.test(username);
+        const isPhone = phoneRegex.test(username);
 
         if (!isEmail && !isPhone) {
             errors.username = 'Enter a valid email or 10-digit phone number';
         }
     }
 
-    if (!form.password || form.password.trim() === '') {
+    if (!password) {
         errors.password = 'Password is required';
-    } else if (form.password.length < 6) {
+    } else if (password.length < 6) {
         errors.password = 'Password must be at least 6 characters';
     }
 
     return errors;
 };
+
 
 
 export const tempValidateSingUp = (values) => {

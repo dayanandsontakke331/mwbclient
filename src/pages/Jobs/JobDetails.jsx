@@ -2,6 +2,7 @@ import { Card, CardContent, Typography, Box, Chip, Stack, Button } from "@mui/ma
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
+import { useEffect } from "react";
 const JobDetails = ({ job }) => {
     const { user } = useAuth();
 
@@ -14,28 +15,36 @@ const JobDetails = ({ job }) => {
             //     userId: user ? user._id : ""
             // });
             // return
+ 
             const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/applyForJob`, {
                 jobId: job._id,
                 userId: user ? user._id : ""
             });
+    
+            console.log(response.status)
 
-            if (!response.data.success) {
-                alert(response.data.message)
+
+            console.log("response.data.success", response.data.success)
+
+
+            if (response.data.success === false && response.status == 409) {
+                alert("Already applied for this job!", { position: "top-right" });
             }
 
             if (response.data.success) {
-                alert("Applied successfully")
-                // toast.success("Applied successfully!", { position: "top-right" });
-            } else {
-                alert("Already applied for this job")
-
-                // toast.error(response.data.message || "Application failed. Try again.", { position: "top-right" });
+                alert("Applied successfully!", { position: "top-right" });
             }
         } catch (err) {
             console.log("error", err?.response?.data?.message)
-            toast.error(err?.response?.data?.message || "Error occured while apply job", { position: "top-right" });
+            alert(err?.response?.data?.message || "Error occured while apply job", { position: "top-right" });
         }
     };
+
+    useEffect(() => {
+        return () => {
+            toast.dismiss();
+        };
+    }, []);
 
     return (
         <Card variant="outlined" sx={{ height: "100%", display: "flex", flexDirection: "column" }}>

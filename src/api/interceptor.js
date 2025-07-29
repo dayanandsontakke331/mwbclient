@@ -1,62 +1,86 @@
 import axios from 'axios';
 
 axios.interceptors.request.use(
-  function (config) {
-    var token = typeof window !== 'undefined' ? window.localStorage.getItem('accessToken') : '';
-
-    // let publicPaths = ["/api/v1/otp-generator/generateotp", "/api/v1/otp-generator/verifyOtp", "/api/v1/customer/getCustomer"];
-    
-    // if(config.url.includes(publicPaths[0]) || config.url.includes(publicPaths[1]) || config.url.includes(publicPaths[2]) ){
-
-    //   token = process.env.REACT_APP_PUBLIC_TOKEN
-    // }
-
-    config.headers.Authorization = `Bearer ${token}`;
+  config => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('accessToken') : '';
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
-  function (error) {
-    return Promise.reject(error);
-  }
+  error => Promise.reject(error)
 );
 
-export const createAxiosResponseInterceptor = async () => {
-  const interceptor = axios.interceptors.response.use(
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
+export const createAxiosResponseInterceptor = () => {
+  axios.interceptors.response.use(
     response => response,
     async error => {
-      console.log("error", error)
-      const status = error?.response?.status
-      console.log("error refresh", status)
-      if (status !== 444 && status !== 401 && status !== 200) {
-        console.log("promise reject");
+      const originalRequest = error.config;
+      const status = error?.response?.status;
+
+      if (![401, 444].includes(status)) {
         return Promise.reject(error);
       }
 
-      axios.interceptors.response.eject(interceptor)
+      if (originalRequest._retry) {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(token => {
+            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+            return axios(originalRequest);
+          })
+          .catch(err => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        console.log("refreshToken", refreshToken)
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/refreshToken`, { refreshToken })
-        console.log("response", response)
-        await saveToken(response);
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/refreshToken`, {
+          refreshToken,
+        });
 
-        error.response.config.headers['Authorization'] = 'Bearer ' + response.data.data.accessToken
+        const newToken = response.data.data.accessToken;
+        const newRefreshToken = response.data.data.refreshToken;
 
-        return await axios(error.response.config)
-      } catch (error2) {
+        localStorage.setItem('accessToken', newToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
+        localStorage.setItem('userData', JSON.stringify(response.data.data.user));
+
+        axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+
+        processQueue(null, newToken);
+        return axios(originalRequest);
+      } catch (err) {
+        processQueue(err, null);
         localStorage.clear();
         window.location.href = '/login';
-        return Promise.reject(error2);
+        return Promise.reject(err);
       } finally {
-        console.log("finally")
-        createAxiosResponseInterceptor();
+        isRefreshing = false;
       }
     }
-  )
-}
-
-const saveToken = async res => {
-  localStorage.setItem('refreshToken', res.data.data.refreshToken);
-  localStorage.setItem('accessToken', res.data.data.accessToken);
-  localStorage.setItem('userData', JSON.stringify(res.data.data.user));
-}
+  );
+};

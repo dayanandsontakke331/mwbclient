@@ -90,7 +90,7 @@ const JobApplications = () => {
       flex: 0.15,
       minWidth: 120,
       renderCell: ({ row }) =>
-        row?.preferences.resume ? (
+        row?.preferences?.resume ? (
           <Button
             variant="outlined"
             size="small"
